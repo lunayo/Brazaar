@@ -5,6 +5,11 @@ import pymongo
 from bottle import *
 from bson.json_util import dumps , loads
 connection = pymongo.MongoClient("mongodb://localhost")
+
+@hook('after_request')
+def setHeaders() :
+    response.content_type = "application/json"
+
 @route('/')
 def index():
     connection = pymongo.MongoClient()
