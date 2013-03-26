@@ -4,7 +4,7 @@ import pymongo
 from bottle import *
 from bson.json_util import dumps, loads
 
-connectionString = "mongodb://localhost"
+connectionString = "ec2-54-228-150-22.eu-west-1.compute.amazonaws.com:27017"
 
 @hook('after_request')
 def setHeaders():
@@ -28,7 +28,9 @@ def getNearbyProducts():
     connection = pymongo.MongoClient(connectionString)
     db = connection.brazaar
     products = db.products
-    query = {'location': {'$near': [location['long'], location['lat']]}}
+    query = {'location': {'$nearSphere':{
+                                        '$geometry': { 'type' : 'Point' ,
+                                                       'coordinates' : [location['long'],location['lat']]}}}}
 
     nearestProducts = products.find(query).limit(10)
 
