@@ -3,7 +3,7 @@ from pymongo import GEO2D
 __author__ = 'Emmanouil Samatas'
 
 import pymongo
-connectionString = "mongodb://localhost"
+connectionString = "mongodb://ec2-54-228-150-22.eu-west-1.compute.amazonaws.com:27017"
 connection = pymongo.MongoClient(connectionString)
 db = connection.brazaar
 products = db.products
