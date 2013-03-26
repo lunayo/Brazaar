@@ -1,0 +1,53 @@
+No Indexes
+
+db.products.aggregate( {
+  $project : {
+  _id:1,
+  location:1,
+  distance: {
+					$add:[
+							{$multiply:
+								[
+							    {$subtract:['$location.longitude',0]} ,
+								{$subtract:['$location.longitude',0]}
+								]
+							} , 
+							{$multiply:
+								[
+								{$subtract:['$location.latitude',0]} ,
+								{$subtract:['$location.latitude',0]}
+								]
+							}
+						] 
+					 
+			}
+	}
+ } ,
+    $sort: {distance : 1})
+
+
+
+
+{
+  $project : {
+  _id:1,
+  location:1,
+  distance: {$sqrt:{
+					$add:[
+							{$multiply:
+								[
+							    {$substract:['$location.longitude',0]} ,
+								{$substract:['$location.longitude',0]}
+								]
+							} , 
+							{$multiply:
+								[
+								{$substract:['$location.latitude',0]} ,
+								{$substract:['$location.latitude',0]}
+								]
+							}
+						] 
+					} 
+			}
+	}
+ }
