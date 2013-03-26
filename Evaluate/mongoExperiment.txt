@@ -23,7 +23,8 @@ db.products.aggregate( {
 			}
 	}
  } ,
-    $sort: {distance : 1})
+    {$sort: {distance : 1}} ,
+    {$limit:100})
 
 
 
@@ -51,3 +52,15 @@ db.products.aggregate( {
 			}
 	}
  }
+
+
+ db.products.insert({'name':'sampleName',
+                         'description':'sampleDescription',
+                         'price' : {value : 300 , 'currency' : 'GBP'},
+                         'user' : 01 ,
+                         'quantity' : 1 ,
+                         'location' : {'longitude':  20 , 'latitude' : -40 }})
+
+ db.products.ensureIndex(location : "2d" )
+
+ db.products.find({'location': {'$near':{'$geometry': { 'type' : 'Point' , 'coordinates' : [20.550945,-20.323923]}}}})

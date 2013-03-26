@@ -24,7 +24,7 @@ def populateDb():
 
     products.drop()
 
-    for i in range(0,10**3):
+    for i in range(0,10**5):
        products.insert({'name':sampleName,
                          'description':sampleDescription,
                          'price' : samplePrice ,
