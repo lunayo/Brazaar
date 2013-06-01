@@ -4,7 +4,7 @@ import pymongo
 from bottle import *
 from bson.json_util import dumps, loads
 
-connectionString = "ec2-54-228-150-22.eu-west-1.compute.amazonaws.com:27017"
+connectionString = "ec2-54-228-18-198.eu-west-1.compute.amazonaws.com:27017"
 
 @hook('after_request')
 def setHeaders():
@@ -14,7 +14,6 @@ def setHeaders():
 @route('/')
 def index():
     connection = pymongo.MongoClient(connectionString)
-    connection = pymongo.MongoClient()
     db = connection.test
     collection = db.test
     return str(collection.find_one())
@@ -26,7 +25,7 @@ def getNearbyProducts():
     token = requestBody['token']
     location = requestBody['location']
     connection = pymongo.MongoClient(connectionString)
-    db = connection.brazaar
+    db = connection.brazaar2
     products = db.products
     query = {'location': {'$nearSphere':{
                                         '$geometry': { 'type' : 'Point' ,
@@ -53,7 +52,7 @@ def addProduct():
         return product
 
     except pymongo.errors.PyMongoError as e:
-        response.status = "400 crap"
+        response.status = "400"
         return {'error': 'Insert Error'}
 
 run(host='localhost', port=8082, debug=True)
