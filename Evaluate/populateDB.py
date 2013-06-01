@@ -4,7 +4,7 @@ from random import uniform
 __author__ = 'Emmanouil Samatas'
 
 import pymongo
-connectionString = "ec2-54-228-150-22.eu-west-1.compute.amazonaws.com:27017"
+connectionString = "ec2-54-228-18-198.eu-west-1.compute.amazonaws.com:27017"
 connection = pymongo.MongoClient(connectionString)
 db = connection.brazaar
 products = db.products
@@ -36,7 +36,7 @@ def indexDb():
     products.create_index([('location',GEOSPHERE)])
 
 populateDb()
-#indexDb()
+indexDb()
 
 print products.find_one()
 
