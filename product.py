@@ -25,16 +25,19 @@ def getNearbyProducts():
     requestBody = loads(request.body.read())
     token = requestBody['token']
     location = requestBody['location']
-    connection = pymongo.MongoClient(connectionString)
-    db = connection.brazaar2
-    products = db.products
-    query = {'location': {'$nearSphere':{
-                                        '$geometry': { 'type' : 'Point' ,
-                                                       'coordinates' : [location['long'],location['lat']]}}}}
+    try :
+        connection = pymongo.MongoClient(connectionString)
+        db = connection.brazaar2
+        products = db.products
+        query = {'location': {'$nearSphere':{
+                                            '$geometry': { 'type' : 'Point' ,
+                                                           'coordinates' : [location['long'],location['lat']]}}}}
 
-    nearestProducts = products.find(query).limit(10)
-
-    return dumps(nearestProducts)
+        nearestProducts = products.find(query).limit(10)
+        return dumps(nearestProducts)
+    except pymongo.errors.PyMongoError as e:
+        response.status = 300
+        return {'error': 'Find Error : ' + str(e)}
 
 @post('/product/addProduct')
 def addProduct():
@@ -52,8 +55,8 @@ def addProduct():
         return product
 
     except pymongo.errors.PyMongoError as e:
-        response.status = "400"
-        return {'error': 'Insert Error'}
+        response.status = 300
+        return {'error': 'Insert Error : ' + str(e)}
 
 # run(host='ec2-54-228-18-198.eu-west-1.compute.amazonaws.com', port=8000, debug=True, reloader=True, server="gevent")
 run(host='127.0.0.1', port=8082, debug=True, reloader=True, server="gevent")
