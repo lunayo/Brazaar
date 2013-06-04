@@ -41,23 +41,39 @@ def getNearbyProducts():
 
 @post('/product/addProduct')
 def addProduct():
-    requestBody = loads(request.body.read())
-    token = requestBody['token']
-    product = requestBody['product']
-    product.setdefault('quantity', 1)
-    location = product['location']
-    product['location'] = [location['longitude'],location['latitude']]
-    print requestBody
-    try:
-        connection = pymongo.MongoClient(connectionString)
-        db = connection.brazaar2
-        products = db.products
-        products.insert(dict(product))
-        return product
 
-    except pymongo.errors.PyMongoError as e:
-        response.status = 300
-        return {'error': 'Insert Error : ' + str(e)}
+    requestBody = request.forms
+    token = requestBody['token']
+    product = {}
+    product['name'] = requestBody['product[name]']
+    product['location'] = [requestBody['product[location][longitude]'],requestBody['product[location][latitude]']]
+    product['description'] = requestBody['product[description]']
+    product.setdefault('quantity', 1)
+    for key in request.files.keys() :
+        fileitem = request.files[key]
+        # Test if the file was uploaded
+        if fileitem.filename:
+           # strip leading path from file name to avoid directory traversal attacks
+           fn = os.path.basename(fileitem.filename)
+           open(os.getcwd() + '/Images/' + fn, 'wb').write(fileitem.file.read())
+           message = 'The file "' + fn + '" was uploaded successfully'
+        else:
+           message = 'No file was uploaded'
+
+        print message
+
+    # location = product['location']
+    # product['location'] = [location['longitude'],location['latitude']]
+    # try:
+    #     connection = pymongo.MongoClient(connectionString)
+    #     db = connection.brazaar2
+    #     products = db.products
+    #     products.insert(dict(product))
+    #     return product
+
+    # except pymongo.errors.PyMongoError as e:
+    #     response.status = 300
+    #     return {'error': 'Insert Error : ' + str(e)}
 
 # run(host='ec2-54-228-18-198.eu-west-1.compute.amazonaws.com', port=8000, debug=True, reloader=True, server="gevent")
 run(host='127.0.0.1', port=8082, debug=True, reloader=True, server="gevent")
