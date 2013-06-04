@@ -104,6 +104,35 @@ def addFollower():
         response.status = 300
         return {'error': 'Insert Error : ' + str(e)}
 
+@post('/user/addFollower')
+def addFollower():
+    relationship = {}
+    session = {'username':"samatase"}
+    requestBody = loads(request.body.read())
+    token = requestBody['token']
+    relationship['following'] = requestBody['username']
+    relationship['user'] = session['username']
+
+    try:
+        connection = pymongo.MongoClient(connectionString)
+        db = connection.brazaar2
+
+        relationships = db.relationships
+
+        validate = list(db.users.find({"username":relationship['following']}))
+
+
+        if validate:
+            relationships.insert(dict(relationship))
+            return relationship
+        else:
+            response.status = 300
+            return 'Invalid username'
+
+    except pymongo.errors.PyMongoError as e:
+        response.status = 300
+        return {'error': 'Insert Error : ' + str(e)}
+
 @post ('/user/createUser')
 def createUser():
     user = {}
@@ -140,14 +169,6 @@ def getFollowing():
     except pymongo.errors.PyMongoError as e:
         response.status = 300
         return {'error': 'Connection Error : ' + str(e)}
-
-
-
-
-
-
-
-
 
 # run(host='ec2-54-228-18-198.eu-west-1.compute.amazonaws.com', port=8000, debug=True, reloader=True, server="gevent")
 run(host='127.0.0.1', port=8082, debug=True, reloader=True)
