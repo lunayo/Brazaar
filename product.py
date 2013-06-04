@@ -31,7 +31,7 @@ def getNearbyProducts():
         products = db.products
         query = {'location': {'$nearSphere':{
                                             '$geometry': { 'type' : 'Point' ,
-                                                           'coordinates' : [location['long'],location['lat']]}}}}
+                                                           'coordinates' : [location['longitude'],location['latitude']]}}}}
 
         nearestProducts = products.find(query).limit(10)
         return dumps(nearestProducts)
@@ -44,9 +44,10 @@ def addProduct():
     requestBody = loads(request.body.read())
     token = requestBody['token']
     product = requestBody['product']
-    if  not product['quantity']:
-        product['quantity'] = 1
-
+    product.setdefault('quantity', 1)
+    location = product['location']
+    product['location'] = [location['longitude'],location['latitude']]
+    print requestBody
     try:
         connection = pymongo.MongoClient(connectionString)
         db = connection.brazaar2
