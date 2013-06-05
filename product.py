@@ -2,10 +2,17 @@ __author__ = 'Emmanouil Samatas'
 
 import pymongo
 #from gevent import monkey; monkey.patch_all()
+from boto.s3.connection import S3Connection
+from boto.s3.connection import Location
+from boto.s3.connection import Key
+
 from bottle import *
 from bson.json_util import dumps, loads
 
 connectionString = "ec2-54-228-18-198.eu-west-1.compute.amazonaws.com:27017"
+
+accessKey = "AKIAICFC5TP7NVT6MK4A"
+secretKey = "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"
 
 @hook('after_request')
 def setHeaders():
@@ -57,26 +64,29 @@ def addProduct():
         productID = products.insert(dict(product))
 
         for key in request.files.keys() :
-        fileitem = request.files[key]
+            fileItem = request.files[key]
         # Test if the file was uploaded
-        if fileitem.filename:
-           # strip leading path from file name to avoid directory traversal attacks
-           fn = os.path.basename(fileitem.filename)
-           open(os.getcwd() + '/Images/' + fn, 'wb').write(fileitem.file.read())
-           message = 'The file "' + fn + '" was uploaded successfully'
-        else:
-           message = 'No file was uploaded'
+            if fileItem.filename:
+                connection = S3Connection(aws_access_key_id= accessKey, aws_secret_access_key= secretKey)
+        
+                bucket = connection.get_bucket("brazaar")
+                key = Key(bucket)
+                key.key = productID + '/' + fileItem.filename 
+                key.set_contents_from_file(fileItem)
+                message = 'The file "' + fileItem.filename + '" was uploaded successfully'
+            else:
+                message = 'No file was uploaded'
 
-        print message
+       
+
+            print message
 
         return product
 
     except pymongo.errors.PyMongoError as e:
         response.status = 300
         return {'error': 'Insert Error : ' + str(e)}
-    else :
-        response.status = 300
-        return {'error': 'Image Error : ' + str(e)}
+
 
 @post('/user/addFollower')
 def addFollower():
