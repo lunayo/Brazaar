@@ -46,40 +46,46 @@ def getNearbyProducts():
         response.status = 300
         return {'error': 'Find Error : ' + str(e)}
 
+def uploadImages(folderName, files) :
+    for key in files.keys() :
+        fileItem = files[key]
+
+        # Test if the file was uploaded
+        if fileItem.filename:
+            connection = S3Connection(aws_access_key_id= accessKey, aws_secret_access_key= secretKey)
+    
+            bucket = connection.get_bucket("brazaar")
+            key = Key(bucket)
+            key.key = folderName + '/' + fileItem.filename 
+            key.set_contents_from_file(fileItem.file)
+            message = 'The file "' + fileItem.filename + '" was uploaded successfully'
+        else:
+            message = 'No file was uploaded'
+
+        print message
+
 @post('/product/addProduct')
 def addProduct():
 
     requestBody = request.forms
     token = requestBody['token']
+    productRequest = {}
     product = {}
     product['name'] = requestBody['product[name]']
     product['location'] = [requestBody['product[location][longitude]'],requestBody['product[location][latitude]']]
     product['description'] = requestBody['product[description]']
     product.setdefault('quantity', 1)
+    productRequest['token'] = token
+    productRequest['product'] = product
 
     try:
         connection = pymongo.MongoClient(connectionString)
         db = connection.brazaar2
         products = db.products
-        productID = products.insert(dict(product))
+        productID = products.insert(dict(productRequest))
 
-        for key in request.files.keys() :
-            fileItem = request.files[key]
-        # Test if the file was uploaded
-            if fileItem.filename:
-                connection = S3Connection(aws_access_key_id= accessKey, aws_secret_access_key= secretKey)
-        
-                bucket = connection.get_bucket("brazaar")
-                key = Key(bucket)
-                key.key = productID + '/' + fileItem.filename 
-                key.set_contents_from_file(fileItem)
-                message = 'The file "' + fileItem.filename + '" was uploaded successfully'
-            else:
-                message = 'No file was uploaded'
-
-       
-
-            print message
+        t1 = threading.Thread(target=uploadImages,args=(str(productID), request.files))
+        t1.start()
 
         return product
 
