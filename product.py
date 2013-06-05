@@ -49,7 +49,14 @@ def addProduct():
     product['location'] = [requestBody['product[location][longitude]'],requestBody['product[location][latitude]']]
     product['description'] = requestBody['product[description]']
     product.setdefault('quantity', 1)
-    for key in request.files.keys() :
+
+    try:
+        connection = pymongo.MongoClient(connectionString)
+        db = connection.brazaar2
+        products = db.products
+        productID = products.insert(dict(product))
+
+        for key in request.files.keys() :
         fileitem = request.files[key]
         # Test if the file was uploaded
         if fileitem.filename:
@@ -62,18 +69,14 @@ def addProduct():
 
         print message
 
-    # location = product['location']
-    # product['location'] = [location['longitude'],location['latitude']]
-    # try:
-    #     connection = pymongo.MongoClient(connectionString)
-    #     db = connection.brazaar2
-    #     products = db.products
-    #     products.insert(dict(product))
-    #     return product
+        return product
 
-    # except pymongo.errors.PyMongoError as e:
-    #     response.status = 300
-    #     return {'error': 'Insert Error : ' + str(e)}
+    except pymongo.errors.PyMongoError as e:
+        response.status = 300
+        return {'error': 'Insert Error : ' + str(e)}
+    else :
+        response.status = 300
+        return {'error': 'Image Error : ' + str(e)}
 
 @post('/user/addFollower')
 def addFollower():
