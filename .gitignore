@@ -164,3 +164,6 @@ pip-log.txt
 
 #py charm crap
 .idea
+
+#nohup output
+nohup.out
