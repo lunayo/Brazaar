@@ -1,0 +1,10 @@
+Bottle v0.11.6 server starting up (using WSGIRefServer())...
+Listening on http://127.0.0.1:8082/
+Hit Ctrl-C to quit.
+
+Bottle v0.11.6 server starting up (using WSGIRefServer())...
+Listening on http://127.0.0.1:8082/
+Hit Ctrl-C to quit.
+
+1.0.0.127.in-addr.arpa - - [12/Jun/2013 02:26:03] "GET / HTTP/1.1" 200 4
+1.0.0.127.in-addr.arpa - - [12/Jun/2013 02:26:03] "GET /favicon.ico HTTP/1.1" 404 742
