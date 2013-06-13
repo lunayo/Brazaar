@@ -1,18 +1,11 @@
 __author__ = 'Emmanouil Samatas'
 
-import pymongo
-#from gevent import monkey; monkey.patch_all()
-from boto.s3.connection import S3Connection
-from boto.s3.connection import Location
-from boto.s3.connection import Key
+# from gevent import monkey; monkey.patch_all()
 
 from bottle import *
 from bson.json_util import dumps, loads
 
-connectionString = "ec2-54-228-18-198.eu-west-1.compute.amazonaws.com:27017"
-
-accessKey = "AKIAICFC5TP7NVT6MK4A"
-secretKey = "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"
+import database
 
 @hook('after_request')
 def setHeaders():
@@ -21,10 +14,7 @@ def setHeaders():
 
 @route('/')
 def index():
-    connection = pymongo.MongoClient(connectionString)
-    db = connection.test
-    collection = db.test
-    return str(collection.find_one())
+    return str(database.find_one(database="test", collection="test"))
 
 
 @post('/product/getNearbyProducts')
@@ -32,32 +22,28 @@ def getNearbyProducts():
     requestBody = loads(request.body.read())
     token = requestBody['token']
     location = requestBody['location']
-    try :
-        connection = pymongo.MongoClient(connectionString)
-        db = connection.brazaar2
-        products = db.products
-        query = {'location': {'$nearSphere':{
-                                            '$geometry': { 'type' : 'Point' ,
-                                                           'coordinates' : [location['longitude'],location['latitude']]}}}}
+    query = {'location': {'$nearSphere':{
+                                        '$geometry': { 'type' : 'Point' ,
+                                                       'coordinates' : [location['longitude'],location['latitude']]}}}}
 
-        nearestProducts = products.find(query).limit(10)
+    nearestProducts = database.find(database="brazaar2", 
+                                    collection="products",
+                                    limit=10)
+
+    if nearestProducts :
         return dumps(nearestProducts)
-    except pymongo.errors.PyMongoError as e:
+    else :
         response.status = 300
-        return {'error': 'Find Error : ' + str(e)}
+        return {'error': 'request collection error'}
 
 def uploadImages(folderName, files) :
     for key in files.keys() :
         fileItem = files[key]
-
         # Test if the file was uploaded
         if fileItem.filename:
-            connection = S3Connection(aws_access_key_id= accessKey, aws_secret_access_key= secretKey)
-    
-            bucket = connection.get_bucket("brazaar")
-            key = Key(bucket)
-            key.key = folderName + '/' + fileItem.filename 
-            key.set_contents_from_file(fileItem.file)
+            key_name = folderName + '/' + fileItem.filename
+            database.upload_image(key_name=key_name, bucket="brazaar",
+                                 data=fileItem.file)
             message = 'The file "' + fileItem.filename + '" was uploaded successfully'
         else:
             message = 'No file was uploaded'
@@ -78,21 +64,17 @@ def addProduct():
     productRequest['token'] = token
     productRequest['product'] = product
 
-    try:
-        connection = pymongo.MongoClient(connectionString)
-        db = connection.brazaar2
-        products = db.products
-        productID = products.insert(dict(productRequest))
+    productID = database.insert(database="brazaar2", 
+                                collection="products",
+                                data=dict(productRequest))
 
+    if productID :
         t1 = threading.Thread(target=uploadImages,args=(str(productID), request.files))
         t1.start()
-
-        return product
-
-    except pymongo.errors.PyMongoError as e:
+        return dumps(product)
+    else :
         response.status = 300
-        return {'error': 'Insert Error : ' + str(e)}
-
+        return {'error': 'insert to collection error'}
 
 @post('/user/addFollower')
 def addFollower():
@@ -103,54 +85,19 @@ def addFollower():
     relationship['following'] = requestBody['username']
     relationship['user'] = session['username']
 
-    try:
-        connection = pymongo.MongoClient(connectionString)
-        db = connection.brazaar2
+    userQuery = '{"username":' + relationship['following'] + '}'
+    validate = list(database.find(database="brazaar2", 
+                                 collection="users",
+                                 query=userQuery))
 
-        relationships = db.relationships
-
-        validate = list(db.users.find({"username":relationship['following']}))
-
-
-        if validate:
-            relationships.insert(dict(relationship))
-            return relationship
-        else:
-            response.status = 300
-            return 'Invalid username'
-
-    except pymongo.errors.PyMongoError as e:
+    if validate :
+        relationshipID = database.insert(database="brazaar2", 
+                                        collection="relationships",
+                                        data=dict(relationship))
+        return dumps(relationship)
+    else :
         response.status = 300
-        return {'error': 'Insert Error : ' + str(e)}
-
-@post('/user/addFollower')
-def addFollower():
-    relationship = {}
-    session = {'username':"samatase"}
-    requestBody = loads(request.body.read())
-    token = requestBody['token']
-    relationship['following'] = requestBody['username']
-    relationship['user'] = session['username']
-
-    try:
-        connection = pymongo.MongoClient(connectionString)
-        db = connection.brazaar2
-
-        relationships = db.relationships
-
-        validate = list(db.users.find({"username":relationship['following']}))
-
-
-        if validate:
-            relationships.insert(dict(relationship))
-            return relationship
-        else:
-            response.status = 300
-            return 'Invalid username'
-
-    except pymongo.errors.PyMongoError as e:
-        response.status = 300
-        return {'error': 'Insert Error : ' + str(e)}
+        return {'error': 'Invalid username'}
 
 @post ('/user/createUser')
 def createUser():
@@ -161,15 +108,15 @@ def createUser():
     user['firstName'] = requestBody['firstName']
     user['lastName'] = requestBody['lastName']
 
-
-    try:
-        connection = pymongo.MongoClient(connectionString)
-        db = connection.brazaar2
-        users = db.users
-        users.insert(user)
-    except pymongo.errors.PyMongoError as e:
+    userID = database.insert(database="brazaar2", 
+                            collection="users",
+                            data=dict(user))
+        
+    if userID :
+        return dumps(user)
+    else :
         response.status = 300
-        return {'error': 'Insert Error : ' + str(e)}
+        return {'error': 'insert to collection error'}
 
 @get ('/user/getFollowings')
 def getFollowing():
@@ -178,16 +125,23 @@ def getFollowing():
     requestBody = loads(request.body.read())
     user = session['username']
 
-    try:
-        connection = pymongo.MongoClient(connectionString)
-        db = connection.brazaar2
-        followings = list(db.relationships.find({"user":user},{"following":1,"_id":0}))
-        for following in followings:
-            followingUsers.append(list(db.users.find({"username":following['following']},{"firstName":1,"lastName":1,"_id":0}).limit(1)))
-        return dumps(followingUsers)
-    except pymongo.errors.PyMongoError as e:
-        response.status = 300
-        return {'error': 'Connection Error : ' + str(e)}
+    followingsQuery = '{"user":user},{"following":1,"_id":0}'
+    followings = list(database.find(database="brazaar2", 
+                                    collection="relationships",
+                                    query=followingsQuery))
 
-# run(host='ec2-54-228-18-198.eu-west-1.compute.amazonaws.com', port=8000, debug=True, reloader=True, server="gevent")
-run(host='127.0.0.1', port=8082, debug=True, reloader=True)
+    usersQuery = '{"username":' + following['following'] + '},{"firstName":1,"lastName":1,"_id":0}'
+    for following in followings:
+        user = database.find(database="brazaar2", 
+                            collection="users",
+                            query=usersQuery,
+                            limit=1)
+        if user :
+            followingUsers.append(list(user))
+        else :
+            return {'error' : 'invalid user'}
+
+    return dumps(followingUsers)
+
+# run(host='0.0.0.0', port=8082, debug=True, reloader=True, server="gevent")
+run(host='127.0.0.1', port=8082, debug=True)
