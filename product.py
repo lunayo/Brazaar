@@ -1,6 +1,6 @@
 __author__ = 'Emmanouil Samatas'
 
-# from gevent import monkey; monkey.patch_all()
+from gevent import monkey; monkey.patch_all()
 
 from bottle import *
 from bson.json_util import dumps, loads
@@ -143,5 +143,5 @@ def getFollowing():
 
     return dumps(followingUsers)
 
-# run(host='0.0.0.0', port=8082, debug=True, reloader=True, server="gevent")
-run(host='127.0.0.1', port=8082, debug=True)
+run(host='0.0.0.0', port=8080, debug=True, reloader=True, server="gevent")
+# run(host='127.0.0.1', port=8082, debug=True)

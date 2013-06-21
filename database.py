@@ -1,7 +1,7 @@
 import pymongo
 import storage
 
-connectionString = "ec2-54-228-107-244.eu-west-1.compute.amazonaws.com:27017"
+connectionString = "127.0.0.1:27017"
 
 def get_connection() :
     try :

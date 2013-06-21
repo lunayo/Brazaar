@@ -1,17 +1,17 @@
 from boto.s3.connection import S3Connection
 from boto.s3.connection import Location
 from boto.s3.connection import Key
-
-accessKey = "AKIAICFC5TP7NVT6MK4A"
-secretKey = "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"
+import sys,os.path
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import haproxy_autoscale.amazon_key
 
 class kUploadContentType:
     File, FileName, String, Stream = range(4)
 
 def get_connection() :
     try :
-        connection = S3Connection(aws_access_key_id=accessKey, 
-                                aws_secret_access_key=secretKey)
+        connection = S3Connection(aws_access_key_id=amazon_key.ACCESS_KEY, 
+                                aws_secret_access_key=amazon_key.SECRET_KEY)
     except Exception, e :
         print "Connetion to S3 error " + str(e)
     return connection

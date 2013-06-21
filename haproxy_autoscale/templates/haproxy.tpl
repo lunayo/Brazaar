@@ -1,8 +1,7 @@
 global  
     daemon
-    maxconn 4096
-    log 127.0.0.1 local0 
-    log 127.0.0.1 local1 notice
+    maxconn 1024
+    pidfile /var/run/haproxy.pid
 
 defaults
     log global
@@ -11,25 +10,26 @@ defaults
     option  dontlognull
     retries 3
     option redispatch
-    maxconn 2000
     contimeout  5000
     clitimeout  50000
     srvtimeout  50000
 
-frontend http-in
-    bind 127.0.0.1:8080
+frontend proxy
+    bind 0.0.0.0:8080
     default_backend servers
 
 backend servers
     balance roundrobin
     option httpchk GET /
     option forwardfor
+    option httpclose
     stats enable
     stats refresh 10s
     stats hide-version
-    stats scope   .
-    stats uri     /admin?stats
-    stats realm   Haproxy\ Statistics
+    stats uri /admin?stats
+    stats auth admin:admin
+    stats realm Haproxy\ Statistics
 
-    server svr0 127.0.0.1:8081 check inter 5000
-    server svr1 127.0.0.1:8082 check inter 5000
+    % for instance in instances['autoscale_group']:
+    server ${ instance.id } ${ instance.public_dns_name }:8080 check inter 5000
+    % endfor

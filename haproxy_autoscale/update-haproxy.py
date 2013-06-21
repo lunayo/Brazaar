@@ -21,7 +21,7 @@ def main():
     parser.add_argument('--output', default='haproxy.cfg',
                         help='Defaults to haproxy.cfg if not specified.')
     parser.add_argument('--template', default='templates/haproxy.tpl')
-    parser.add_argument('--haproxy', default='./haproxy',
+    parser.add_argument('--haproxy', default='haproxy',
                         help='The haproxy binary to call. Defaults to haproxy if not specified.')
     parser.add_argument('--pid', default='/var/run/haproxy.pid',
                         help='The pid file for haproxy. Defaults to /var/run/haproxy.pid.')
@@ -64,7 +64,7 @@ def main():
         
         # Restart haproxy.
         logging.info('Restarting haproxy.')
-        command = '''%s -p %s -f %s -sf %s''' % (args.haproxy, args.pid, args.output, pid or '')
+        command = '''%s -p %s -f '%s' -sf %s''' % (args.haproxy, args.pid, args.output, pid or '')
         logging.info('Executing: %s' % command)
         subprocess.call(command, shell=True)
     else:

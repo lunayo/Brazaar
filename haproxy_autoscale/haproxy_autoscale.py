@@ -32,10 +32,9 @@ def get_running_instances(access_key=None, secret_key=None, region=None, securit
     conn = boto.ec2.connect_to_region(region, 
                                         aws_access_key_id=access_key,
                                         aws_secret_access_key=secret_key)
-
     if security_group:
-        reservations = conn.get_all_instances()
-        instances = [i for r in reservations for i in r.instances if i.state == "running"]
+        groups = conn.get_all_security_groups(groupnames=[security_group])[0]
+        instances = [i for i in groups.instances() if i.state == "running"]
         return instances
     else:
         instances = conn.get_all_instances()
