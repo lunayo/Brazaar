@@ -14,7 +14,7 @@ group_name = "autoscale_group"
 security_groups = ["autoscale_group"]
 user_data_name = "init-autoscale.sh"
 
-server_image = "ami-3d021049"
+server_image = "ami-b39f8dc7"
 instance_type = "t1.micro"
 
 def get_autoscale_connection() :
@@ -110,10 +110,10 @@ def create_alarm() :
 
 
 def main() :
-    get_autoscale_connection()
+    # get_autoscale_connection()
     # delete_autoscale_group()
     # delete_launch_configuration() 
-    # create_autoscale_group()
+    create_autoscale_group()
     # create_alarm()
 
 main()

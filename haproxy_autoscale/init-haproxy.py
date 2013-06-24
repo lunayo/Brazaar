@@ -2,11 +2,11 @@ import boto.ec2
 import amazon_key
 import time
 
-server_image = "ami-45c1d331"
+server_image = "ami-af9f8ddb"
 instance_type = "t1.micro"
 security_groups = ["default"]
 user_data_name = "init-haproxy.sh"
-elastic_ip = "54.217.229.238"
+elastic_ip = "54.217.232.119"
 
 def get_connection() :
     conn = boto.ec2.connect_to_region(amazon_key.REGION,
