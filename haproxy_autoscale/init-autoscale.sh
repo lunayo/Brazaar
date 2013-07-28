@@ -7,4 +7,4 @@ echo END
 
 #initialise the application server and database in background
 mongod --fork --logpath="/log/mongod.log"
-nohup python /home/ec2-user/Server/Brazaar/product.py &
+python /home/ec2-user/Server/Brazaar/product.py

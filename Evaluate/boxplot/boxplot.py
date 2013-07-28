@@ -30,7 +30,6 @@ for file in sys.argv[1:]:
     starttimes[row['label']][threads].append(int(row['timeStamp']) - int(row['elapsed']))
     if (row['success'] != 'true'):
       errors[row['label']][threads].append(int(row['elapsed']))
-
  
 # Draw a separate figure for each label found in the results.
 for label in elapsed:
@@ -56,8 +55,7 @@ for label in elapsed:
       error_x.append(column)
       error_y.append(error)
     column += 1
- 
- 
+
   # Start a new figure
   fig = figure(figsize=(9, 6))
  
@@ -68,7 +66,7 @@ for label in elapsed:
   # Plot response time
   ax1 = fig.add_subplot(111)
   ax1.set_yscale('log')
-  bp = boxplot(plot_data, notch=0, sym='+', vert=1, whis=1.5)
+  bp = boxplot(plot_data, notch=0, sym='', vert=1, whis=0.75)
  
   # Tweak colors on the boxplot
   plt.setp(bp['boxes'], color='g')
@@ -100,7 +98,7 @@ for label in elapsed:
  
   # Label the axis
   ax1.set_title(label)
-  ax1.set_xlabel('Number of concurrent requests')
+  ax1.set_xlabel('Number of concurrent users')
   ax2.set_ylabel('Requests per second')
   ax1.set_ylabel('Milliseconds')
   ax1.set_xticks(range(1, len(plot_labels) + 1, 1))

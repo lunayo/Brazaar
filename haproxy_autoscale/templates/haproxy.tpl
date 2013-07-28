@@ -1,7 +1,7 @@
 global  
     daemon
     maxconn 1024
-    ulimit-n 65535
+    ulimit-n 2060
     pidfile /var/run/haproxy.pid
 
 defaults
@@ -17,6 +17,10 @@ defaults
 
 listen proxy
     bind 0.0.0.0:8080
+    acl image_content path_end .jpg .gif .png
+    acl image_path path_beg /product/getImages/
+    reqrep ^([^\ ]*)\ /product/getImages/(.*)     \1\ /\2 if image_content image_path
+    redirect prefix http://brazaar.s3.amazonaws.com if image_content
     default_backend servers
 
 listen stats 

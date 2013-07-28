@@ -2,7 +2,7 @@ import boto.ec2
 import amazon_key
 import time
 
-server_image = "ami-af9f8ddb"
+server_image = "ami-7fd9c60b"
 instance_type = "t1.micro"
 security_groups = ["default"]
 user_data_name = "init-haproxy.sh"
